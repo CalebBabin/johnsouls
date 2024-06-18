@@ -64,11 +64,11 @@ const generate = (url) => {
 		roughness: 0.25,
 	}));
 	art.material.map.anisotropy = window.maxAnisotropy;
-	art.position.z = 0.0001;
+	art.position.z = 0.0003;
 	group.add(art);
 
 	const header = new THREE.Mesh(headerGeometry, headerArt);
-	header.position.z = 0.0001;
+	header.position.z = 0.0003;
 	group.add(header);
 
 	const artClone = art.clone();

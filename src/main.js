@@ -42,6 +42,11 @@ const ChatInstance = new TwitchChat({
 		side: THREE.DoubleSide,
 	},
 
+	textureHook: (texture) => {
+		texture.colorSpace = THREE.SRGBColorSpace;
+		texture.magFilter = THREE.NearestFilter;
+	},
+
 	channels,
 	maximumEmoteLimit: 3,
 })
@@ -103,15 +108,6 @@ function draw() {
 	lastFrame = Date.now();
 
 
-	for (let i = 0; i < boxArts.length; i++) {
-		const element = boxArts[i];
-		const p = Date.now() / 10000 + (i / boxArts.length) * Math.PI * 2;
-		element.position.x = Math.sin(p) * 5 + johnSoulsMesh.position.x;
-		element.position.z = Math.cos(p) * 5 + johnSoulsMesh.position.z;
-		element.rotation.z += delta * 0.1;
-	}
-
-
 	renderer.render(scene, camera);
 	if (query_vars.stats) stats.end();
 };
@@ -127,6 +123,7 @@ const sceneEmoteArray = [];
 const emoteGeometry = new THREE.PlaneGeometry(1.5, 1.5);
 ChatInstance.listen((emotes) => {
 	const group = new THREE.Group();
+	group.rotation.y = Math.PI / 2;
 	group.position.z = johnSoulsMesh.position.z;
 	group.position.y = 2 + Math.random() * 4;
 
@@ -252,32 +249,6 @@ JohnHat.castShadow = true;
 JohnHat.receiveShadow = true;
 johnSoulsMesh.add(JohnHat);
 
-/* game boxes */
-import newBoxArt from './boxart';
-
-const gamebox = newBoxArt("/games/demonsouls.webp");
-gamebox.position.z = -3.8;
-gamebox.position.y = -0.35;
-gamebox.rotation.set(-Math.PI * 0.45, 0.02, 0.6 + Math.random() * 3);
-gamebox.scale.setScalar(5);
-setInterval(() => {
-	gamebox.rotation.z += 0.0005;
-}, 16)
-scene.add(gamebox);
-
-
-const boxArts = [
-	newBoxArt("/games/darksouls.webp"),
-	newBoxArt("/games/darksouls2.webp"),
-	newBoxArt("/games/darksouls3.webp"),
-	newBoxArt("/games/eldenring.webp"),
-	newBoxArt("/games/bloodborne.webp"),
-];
-for (let i = 0; i < boxArts.length; i++) {
-	scene.add(boxArts[i]);
-	boxArts[i].rotation.set(Math.random() * Math.PI * 2, Math.random() * Math.PI * 2, Math.random() * Math.PI * 2);
-	boxArts[i].scale.setScalar(2);
-}
 
 
 // scene.background = new THREE.Color(0x000E16);
