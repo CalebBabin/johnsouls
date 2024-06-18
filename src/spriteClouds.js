@@ -105,7 +105,7 @@ sphere.position.y = 74;
 mesh.add(sphere);
 
 const foreground = new THREE.Mesh(
-	new THREE.PlaneBufferGeometry(20, 20),
+	new THREE.PlaneGeometry(20, 20),
 	material
 );
 foreground.rotation.y = Math.PI;

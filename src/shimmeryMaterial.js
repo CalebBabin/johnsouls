@@ -21,11 +21,24 @@ function generateShimmeryMat(options) {
 		uniforms = shader.uniforms;
 		tick();
 		shimmeryMat.userData.shader = shader;
+		shader.vertexShader = shader.vertexShader.replace(
+			'void main()',
+			`
+				varying vec2 vUv;
+				void main()
+			`);
+		shader.vertexShader = shader.vertexShader.replace(
+			'#include <project_vertex>',
+			`
+				#include <project_vertex>
+				vUv = uv;
+			`);
 		shader.fragmentShader = `
 		uniform float u_time;
+		varying vec2 vUv;
 		${webGLSimplex3DNoise.split('float snoiseOffset')[0]}
 		
-		${shader.fragmentShader.replace('#include <alphamap_fragment>',`
+		${shader.fragmentShader.replace('#include <alphamap_fragment>', `
 			#include <alphamap_fragment>
 
 			float alphaMult = 0.0;

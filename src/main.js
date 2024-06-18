@@ -1,9 +1,10 @@
 import TwitchChat from "twitch-chat-emotes-threejs";
 import * as THREE from "three";
-import Stats from "stats-js";
 import "./main.css";
 import generateShimmeryMat from "./shimmeryMaterial";
 import generateTurbanMat from "./turbanMaterial";
+import Stats from "three/examples/jsm/libs/stats.module";
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
 window.shaderPID = 10000;
 
 /*
@@ -181,8 +182,6 @@ const emoteScale = 0.3;
 ** Set up scene
 */
 
-import johnsmoulsURL from "./johnsmouls.png";
-import johnsmoulsHighlightURL from "./johnsmoulsCutout.png";
 
 const johnCanvas = document.createElement('canvas');
 const johnContext = johnCanvas.getContext('2d');
@@ -200,11 +199,10 @@ let johnError = false;
 johnImage.onerror = () => {
 	if (johnError) return;
 	johnError = true;
-	johnImage.src = johnsmoulsURL + "?attempt2";
+	johnImage.src = "/johnsmouls.png?attempt2";
 };
-johnImage.src = johnsmoulsURL;
+johnImage.src = "/johnsmouls.png";
 
-import johnChairURL from "./johnChair.png";
 const chairImage = new Image();
 chairImage.onload = () => {
 	chairImage.width = johnImage.width;
@@ -219,13 +217,13 @@ let chairError = false;
 chairImage.onerror = () => {
 	if (chairError) return;
 	chairError = true;
-	chairImage.src = johnChairURL + "?attempt2";
+	chairImage.src = "/johnChair.png?attempt2";
 };
-chairImage.src = johnChairURL;
+chairImage.src = "/johnChair.png";
 
 const JohnWidth = 3.5;
 const JohnHeight = JohnWidth * 2;
-const johnSoulsPlane = new THREE.PlaneBufferGeometry(JohnWidth, JohnHeight, 1, 1);
+const johnSoulsPlane = new THREE.PlaneGeometry(JohnWidth, JohnHeight, 1, 1);
 const johnTexture = new THREE.Texture(johnCanvas);
 
 const johnSoulsMesh = new THREE.Mesh(
@@ -239,7 +237,7 @@ const johnSoulsMesh = new THREE.Mesh(
 const johnSoulsHighlight = new THREE.Mesh(
 	johnSoulsPlane,
 	generateShimmeryMat({
-		map: new THREE.TextureLoader().load(johnsmoulsHighlightURL),
+		map: new THREE.TextureLoader().load("johnsmoulsCutout.png"),
 		transparent: true,
 		opacity: 1,
 		blending: THREE.AdditiveBlending,
@@ -251,16 +249,13 @@ johnSoulsMesh.position.set(0, 3.02, -3);
 scene.add(johnSoulsMesh);
 
 const hatSize = 4;
-import hatURL from './hat.png';
-import hatBlurURL from './hatBlur.png';
-import hatDisplaceURL from './hatDisplace.png';
 const JohnHat = new THREE.Mesh(
-	new THREE.CylinderBufferGeometry(hatSize * 0.75, JohnWidth * 0.093, hatSize, 100, 600, true),
+	new THREE.CylinderGeometry(hatSize * 0.75, JohnWidth * 0.093, hatSize, 100, 600, true),
 	generateTurbanMat({
-		map: new THREE.TextureLoader().load(hatURL),
-		bumpMap: new THREE.TextureLoader().load(hatBlurURL),
+		map: new THREE.TextureLoader().load("/hat.png"),
+		bumpMap: new THREE.TextureLoader().load("/hatBlur.png"),
 		bumpScale: 0.01,
-		displacementMap: new THREE.TextureLoader().load(hatDisplaceURL),
+		displacementMap: new THREE.TextureLoader().load("/hatDisplace.png"),
 		displacementScale: 0.15,
 		color: 0xFFFFFF,
 		specular: 0xff2211,
@@ -282,8 +277,7 @@ johnSoulsMesh.add(JohnHat);
 /* game boxes */
 import newBoxArt from './boxart';
 
-import demonsoulsURL from './games/demonsouls.webp';
-const gamebox = newBoxArt(demonsoulsURL);
+const gamebox = newBoxArt("/games/demonsouls.webp");
 gamebox.position.z = -3.8;
 gamebox.position.y = -0.35;
 gamebox.rotation.set(-Math.PI * 0.45, 0.02, 0.6 + Math.random() * 3);
@@ -294,17 +288,12 @@ setInterval(() => {
 scene.add(gamebox);
 
 
-import darkSoulsURL from './games/darksouls.webp';
-import darkSouls2URL from './games/darksouls2.webp';
-import darkSouls3URL from './games/darksouls3.webp';
-import eldenringURL from './games/eldenring.webp';
-import bloodborneURL from './games/bloodborne.webp';
 const boxArts = [
-	newBoxArt(darkSoulsURL),
-	newBoxArt(darkSouls2URL),
-	newBoxArt(darkSouls3URL),
-	newBoxArt(eldenringURL),
-	newBoxArt(bloodborneURL),
+	newBoxArt("/games/darksouls.webp"),
+	newBoxArt("/games/darksouls2.webp"),
+	newBoxArt("/games/darksouls3.webp"),
+	newBoxArt("/games/eldenring.webp"),
+	newBoxArt("/games/bloodborne.webp"),
 ];
 for (let i = 0; i < boxArts.length; i++) {
 	scene.add(boxArts[i]);
@@ -324,24 +313,11 @@ scene.add(spriteClouds);
 const envGenerator = new THREE.PMREMGenerator(renderer);
 envGenerator.compileCubemapShader();
 
-import envMapURL from './envmap.jpg';
-new THREE.TextureLoader().load(envMapURL, texture => {
+new THREE.TextureLoader().load("/envmap.jpg", texture => {
 	const envMap = envGenerator.fromEquirectangular(texture);
 	scene.environment = envMap.texture;
 });
 
-
-/*const ground = new THREE.Mesh(
-	new THREE.PlaneBufferGeometry(1000, 1000, 1, 1),
-	new THREE.MeshStandardMaterial({
-		color: 0x222222,
-		roughness: 0.6,
-		metalness: 0.75,
-	})
-)
-ground.rotateX(-Math.PI / 2);
-ground.position.y = -1;
-scene.add(ground);*/
 
 const initLightShadows = (light) => {
 	light.castShadow = true;

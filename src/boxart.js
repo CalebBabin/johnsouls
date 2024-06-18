@@ -27,11 +27,11 @@ artGeometry.translate(0, -height * 0.05, 0);
 
 const headerGeometry = new THREE.PlaneGeometry(width, height * 0.1);
 headerGeometry.translate(0, height * 0.451, 0);
-import headerArtURL from './piss.png';
+
 const headerArt = new THREE.MeshStandardMaterial({
 	color: 0xffffff,
 	roughness: 0.25,
-	map: new THREE.TextureLoader().load(headerArtURL),
+	map: new THREE.TextureLoader().load("/piss.png"),
 })
 headerArt.map.anisotropy = window.maxAnisotropy;
 
