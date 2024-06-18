@@ -105,3 +105,4 @@ typings/
 package-lock.json
 
 dist
+*.blend1

@@ -4,7 +4,6 @@ import "./main.css";
 import generateShimmeryMat from "./shimmeryMaterial";
 import generateTurbanMat from "./turbanMaterial";
 import Stats from "three/examples/jsm/libs/stats.module";
-import { GLTFLoader } from "three/examples/jsm/Addons.js";
 window.shaderPID = 10000;
 
 /*
@@ -51,7 +50,7 @@ const ChatInstance = new TwitchChat({
 ** Initiate ThreejS scene
 */
 
-const camera = new THREE.PerspectiveCamera(
+let camera = new THREE.PerspectiveCamera(
 	query_vars.fov ? Number(query_vars.fov) : 70,
 	window.innerWidth / window.innerHeight,
 	0.1,
@@ -189,9 +188,6 @@ const johnImage = new Image();
 johnImage.onload = () => {
 	johnCanvas.width = johnImage.width;
 	johnCanvas.height = johnImage.height;
-	if (chairImage.complete) {
-		johnContext.drawImage(chairImage, 0, 0);
-	}
 	johnContext.drawImage(johnImage, 0, 0);
 	johnTexture.needsUpdate = true;
 };
@@ -203,24 +199,6 @@ johnImage.onerror = () => {
 };
 johnImage.src = "/johnsmouls.png";
 
-const chairImage = new Image();
-chairImage.onload = () => {
-	chairImage.width = johnImage.width;
-	chairImage.height = johnImage.height;
-	johnContext.drawImage(chairImage, 0, 0);
-	if (johnImage.complete) {
-		johnContext.drawImage(johnImage, 0, 0);
-	}
-	johnTexture.needsUpdate = true;
-};
-let chairError = false;
-chairImage.onerror = () => {
-	if (chairError) return;
-	chairError = true;
-	chairImage.src = "/johnChair.png?attempt2";
-};
-chairImage.src = "/johnChair.png";
-
 const JohnWidth = 3.5;
 const JohnHeight = JohnWidth * 2;
 const johnSoulsPlane = new THREE.PlaneGeometry(JohnWidth, JohnHeight, 1, 1);
@@ -231,6 +209,7 @@ const johnSoulsMesh = new THREE.Mesh(
 	new THREE.MeshBasicMaterial({
 		map: johnTexture,
 		transparent: true,
+		side: THREE.DoubleSide,
 		opacity: query_vars.nojohn !== undefined ? 0 : 1,
 	})
 );
@@ -245,7 +224,6 @@ const johnSoulsHighlight = new THREE.Mesh(
 );
 johnSoulsHighlight.position.z = 0.025;
 johnSoulsMesh.add(johnSoulsHighlight);
-johnSoulsMesh.position.set(0, 3.02, -3);
 scene.add(johnSoulsMesh);
 
 const hatSize = 4;
@@ -302,13 +280,11 @@ for (let i = 0; i < boxArts.length; i++) {
 }
 
 
-scene.background = new THREE.Color(0x000E16);
-scene.fog = new THREE.Fog(scene.background, 4, 300);
+// scene.background = new THREE.Color(0x000E16);
+// scene.fog = new THREE.Fog(scene.background, 4, 300);
 
-
-
-import spriteClouds from './spriteClouds';
-scene.add(spriteClouds);
+// import spriteClouds from './spriteClouds';
+// scene.add(spriteClouds);
 
 const envGenerator = new THREE.PMREMGenerator(renderer);
 envGenerator.compileCubemapShader();
@@ -319,39 +295,37 @@ new THREE.TextureLoader().load("/envmap.jpg", texture => {
 });
 
 
-const initLightShadows = (light) => {
-	light.castShadow = true;
-	light.shadow.mapSize.width = 64;
-	light.shadow.mapSize.height = 64;
-	light.shadow.camera.near = 0.1;
-	light.shadow.camera.far = 10;
-	light.shadow.bias = -0.001;
-}
 
-const lightTarget = new THREE.Object3D();
-lightTarget.position.set(0, 10, johnSoulsMesh.position.z);
-scene.add(lightTarget);
+import { GLTFLoader } from "three/examples/jsm/Addons.js";
+import { DRACOLoader } from "three/examples/jsm/Addons.js";
+const loader = new GLTFLoader();
+const dracoLoader = new DRACOLoader();
+loader.setDRACOLoader(dracoLoader);
+loader.load("/scene.glb", (gltf) => {
+	const importedModel = gltf.scene;
+	for (let i = 0; i < importedModel.children.length; i++) {
+		const element = importedModel.children[i];
+		element.castShadow = true;
+		element.receiveShadow = true;
 
-//const johnLight = new THREE.PointLight(0xff2211, 0.5, 5);
-const johnLight = new THREE.SpotLight(0xFF4C00, 0.8, 10, Math.PI / 2);
-johnLight.lookAt(new THREE.Vector3(0, -1, 0));
-johnLight.position.set(0, 3, 0);
-scene.add(johnLight);
+		if (element.isLight) {
+			element.intensity *= 0.01;
+		}
 
-const hatLight = new THREE.SpotLight(0xFF4C00, 1, 20, Math.PI / 6);
-hatLight.position.set(0, 0, johnSoulsMesh.position.z + 1);
-hatLight.target = lightTarget;
-scene.add(hatLight);
-initLightShadows(hatLight);
+		if (element.name === "Chair") {
+			johnSoulsMesh.position.copy(element.position);
+			johnSoulsMesh.position.y += 2.3;
+			johnSoulsMesh.position.x += 0.5;
+			johnSoulsMesh.rotation.y = Math.PI / 2;
+			johnSoulsMesh.scale.multiplyScalar(0.8);
+			console.log("found chair");
+		}
 
-const backLight1 = new THREE.SpotLight(0x00B8FF, 0.6, 20);
-backLight1.position.set(3, 0, -3);
-backLight1.target = lightTarget;
-scene.add(backLight1);
-initLightShadows(backLight1);
-
-const backLight2 = new THREE.SpotLight(0x00B8FF, 0.6, 20);
-backLight2.position.set(-3, 0, -3);
-backLight2.target = lightTarget;
-scene.add(backLight2);
-initLightShadows(backLight2);
+		console.log(element.name, element);
+	}
+	camera = gltf.cameras[0];
+	camera.near = 0.1;
+	camera.far = 350;
+	scene.add(importedModel);
+	resize();
+});
