@@ -24,6 +24,7 @@ export function applyLandscapeFog(material) {
             'void main()',
             `
             uniform float u_time;
+            varying vec3 vPos;
             void main()
             `);
         shader.vertexShader = shader.vertexShader.replace(
@@ -37,26 +38,28 @@ export function applyLandscapeFog(material) {
             transformed.y += fogDisplacement;
 
             vMapUv.x -= (u_time * 0.01);
+            vPos = position;
             `);
 
-        // shader.fragmentShader = shader.fragmentShader.replace(
-        //     'void main()',
-        //     `
-        //     uniform float u_time;
-        //     void main()
-        //     `);
-        // shader.fragmentShader = shader.fragmentShader.replace(
-        //     '#include <map_fragment>',
-        //     /*glsl*/`
-        //     vec4 sampledDiffuseColor = texture2D( map, vMapUv );
+        shader.fragmentShader = shader.fragmentShader.replace(
+            'void main()',
+            `
+            uniform float u_time;
+            varying vec3 vPos;
+            void main()
+            `);
+        shader.fragmentShader = shader.fragmentShader.replace(
+            '#include <map_fragment>',
+            /*glsl*/`
+            #include <map_fragment>
 
-        //     #ifdef DECODE_VIDEO_TEXTURE
-        //         // use inline sRGB decode until browsers properly support SRGB8_ALPHA8 with video textures (#26516)
-        //         sampledDiffuseColor = vec4( mix( pow( sampledDiffuseColor.rgb * 0.9478672986 + vec3( 0.0521327014 ), vec3( 2.4 ) ), sampledDiffuseColor.rgb * 0.0773993808, vec3( lessThanEqual( sampledDiffuseColor.rgb, vec3( 0.04045 ) ) ) ), sampledDiffuseColor.w );
-        //     #endif
+            float fogStart = 0.05;
+            float fogEnd = 0.18;
 
-        //     diffuseColor *= sampledDiffuseColor;
-        //     `);
+            float customFog = smoothstep(fogEnd, fogStart, vPos.y);
+            diffuseColor.a *= pow(customFog, 2.0);
+            // diffuseColor.a = floor(customFog * 2.0) - 1.0;
+            `);
     }
 
     window.requestAnimationFrame(tick);
