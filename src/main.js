@@ -206,8 +206,7 @@ const johnSoulsMesh = new THREE.Mesh(
 	new THREE.MeshBasicMaterial({
 		map: johnTexture,
 		transparent: true,
-		side: THREE.DoubleSide,
-		opacity: query_vars.nojohn !== undefined ? 0 : 1,
+		side: THREE.FrontSide,
 	})
 );
 const johnSoulsHighlight = new THREE.Mesh(
@@ -252,7 +251,8 @@ johnSoulsMesh.add(JohnHat);
 
 
 // scene.background = new THREE.Color(0x000E16);
-// scene.fog = new THREE.Fog(scene.background, 4, 300);
+scene.background = new THREE.Color(0xb09a5e);
+scene.fog = new THREE.Fog(scene.background, 4, 350);
 
 // import spriteClouds from './spriteClouds';
 // scene.add(spriteClouds);
@@ -269,6 +269,7 @@ new THREE.TextureLoader().load("/envmap.jpg", texture => {
 
 import { GLTFLoader } from "three/examples/jsm/Addons.js";
 import { DRACOLoader } from "three/examples/jsm/Addons.js";
+import { applyLandscapeFog } from "./landscapeFog";
 const loader = new GLTFLoader();
 const dracoLoader = new DRACOLoader();
 loader.setDRACOLoader(dracoLoader);
@@ -280,16 +281,27 @@ loader.load("/scene.glb", (gltf) => {
 		element.receiveShadow = true;
 
 		if (element.isLight) {
-			element.intensity *= 0.01;
+			element.intensity *= 0.0075;
 		}
+
 
 		if (element.name === "Chair") {
 			johnSoulsMesh.position.copy(element.position);
 			johnSoulsMesh.position.y += 2.3;
-			johnSoulsMesh.position.x += 0.5;
+			johnSoulsMesh.position.x += 0.7;
 			johnSoulsMesh.rotation.y = Math.PI / 2;
 			johnSoulsMesh.scale.multiplyScalar(0.8);
 			console.log("found chair");
+		} else if (element.isMesh) {
+			element.material.side = THREE.FrontSide;
+		}
+		
+		if (element.name === "Foreground") {
+			element.material.side = THREE.BackSide;
+		}
+
+		if (element.name.endsWith("Fog")) {
+			applyLandscapeFog(element.material);
 		}
 
 		console.log(element.name, element);
