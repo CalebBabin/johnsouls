@@ -251,7 +251,7 @@ johnSoulsMesh.add(JohnHat);
 
 
 // scene.background = new THREE.Color(0x000E16);
-scene.background = new THREE.Color(0xb09a5e);
+scene.background = new THREE.Color(0x000E16);
 scene.fog = new THREE.Fog(scene.background, 4, 350);
 
 // import spriteClouds from './spriteClouds';
