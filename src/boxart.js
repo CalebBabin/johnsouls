@@ -10,7 +10,7 @@ shape.lineTo(width, 0);
 shape.lineTo(0, 0);
 
 const extrudeSettings = {
-	steps: 2,
+	steps: 1,
 	depth: 0.01,
 	bevelEnabled: true,
 	bevelThickness: 0.02,
@@ -28,21 +28,22 @@ artGeometry.translate(0, -height * 0.05, 0);
 const headerGeometry = new THREE.PlaneGeometry(width, height * 0.1);
 headerGeometry.translate(0, height * 0.451, 0);
 import headerArtURL from './piss.png';
-const headerArt = new THREE.MeshStandardMaterial({
+const headerArt = new THREE.MeshPhongMaterial({
 	color: 0xffffff,
-	roughness: 0.25,
+	shininess: 50,
 	map: new THREE.TextureLoader().load(headerArtURL),
 })
 headerArt.map.anisotropy = window.maxAnisotropy;
 
 
-const boxMaterial = new THREE.MeshStandardMaterial({
+const boxMaterial = new THREE.MeshPhongMaterial({
 	color: 0x6666ff,
 	transparent: true,
 	opacity: 0.95,
-	roughness: 0.5,
-	metalness: 0.5,
+	shininess: 100,
 })
+
+import { ssrSelects } from './effects';
 
 const generate = (url) => {
 	const group = new THREE.Group();
@@ -58,17 +59,17 @@ const generate = (url) => {
 	group.scale.setScalar(4);
 	group.position.z = 2;
 
-	const art = new THREE.Mesh(artGeometry, new THREE.MeshStandardMaterial({
+	/*const art = new THREE.Mesh(artGeometry, new THREE.MeshPhongMaterial({
 		color: 0xffffff,
 		map: new THREE.TextureLoader().load(url),
-		roughness: 0.25,
+		shininess: 50,
 	}));
 	art.material.map.anisotropy = window.maxAnisotropy;
-	art.position.z = 0.0001;
+	art.position.z = 0.001;
 	group.add(art);
 
 	const header = new THREE.Mesh(headerGeometry, headerArt);
-	header.position.z = 0.0001;
+	header.position.z = 0.001;
 	group.add(header);
 
 	const artClone = art.clone();
@@ -78,7 +79,9 @@ const generate = (url) => {
 	const headerClone = header.clone();
 	headerClone.position.z = box.position.z * 2 * 0.85;
 	headerClone.rotation.y = Math.PI;
-	group.add(headerClone);
+	group.add(headerClone);*/
+
+	ssrSelects.push(/*header, art, artClone, headerClone,*/ box);
 
 	/*const disclaimer = new THREE.Mesh(disclaimerGeometry, new THREE.MeshStandardMaterial({
 		color: 0xffffff,

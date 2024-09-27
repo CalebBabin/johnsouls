@@ -104,12 +104,12 @@ sphere.position.z = -7;
 sphere.position.y = 74;
 mesh.add(sphere);
 
-const foreground = new THREE.Mesh(
+/*const foreground = new THREE.Mesh(
 	new THREE.PlaneBufferGeometry(20, 20),
 	material
 );
 foreground.rotation.y = Math.PI;
 foreground.position.z = 4;
-mesh.add(foreground);
+mesh.add(foreground);*/
 
 export default mesh;

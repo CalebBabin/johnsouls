@@ -50,7 +50,7 @@ const ChatInstance = new TwitchChat({
 ** Initiate ThreejS scene
 */
 
-const camera = new THREE.PerspectiveCamera(
+export const camera = new THREE.PerspectiveCamera(
 	query_vars.fov ? Number(query_vars.fov) : 70,
 	window.innerWidth / window.innerHeight,
 	0.1,
@@ -60,8 +60,8 @@ camera.position.z = 5;
 camera.position.y = 0.75;
 camera.lookAt(0, 2.5, 0);
 
-const scene = new THREE.Scene();
-const renderer = new THREE.WebGLRenderer({ antialias: true, powerPreference: "high-performance" });
+export const scene = new THREE.Scene();
+export const renderer = new THREE.WebGLRenderer({ antialias: true });
 renderer.shadowMap.enabled = true;
 renderer.shadowMap.type = THREE.PCFSoftShadowMap;
 
@@ -69,13 +69,18 @@ window.maxAnisotropy = renderer.capabilities.getMaxAnisotropy();
 
 renderer.setSize(window.innerWidth, window.innerHeight);
 
+import getComposer from './effects'
+const composer = getComposer();
+
 function resize() {
 	camera.aspect = window.innerWidth / window.innerHeight;
 	camera.updateProjectionMatrix();
 	renderer.setSize(window.innerWidth, window.innerHeight);
+	composer.setSize( window.innerWidth, window.innerHeight );
 }
 
 window.addEventListener('DOMContentLoaded', () => {
+	resize();
 	window.addEventListener('resize', resize);
 	if (query_vars.stats) document.body.appendChild(stats.dom);
 	document.body.appendChild(renderer.domElement);
@@ -112,7 +117,8 @@ function draw() {
 	}
 
 
-	renderer.render(scene, camera);
+	//renderer.render(scene, camera);
+	composer.render();
 	if (query_vars.stats) stats.end();
 };
 
@@ -285,7 +291,7 @@ import newBoxArt from './boxart';
 import demonsoulsURL from './games/demonsouls.webp';
 const gamebox = newBoxArt(demonsoulsURL);
 gamebox.position.z = -3.8;
-gamebox.position.y = -0.35;
+gamebox.position.y = -0.27;
 gamebox.rotation.set(-Math.PI * 0.45, 0.02, 0.6 + Math.random() * 3);
 gamebox.scale.setScalar(5);
 setInterval(() => {
@@ -321,16 +327,6 @@ scene.fog = new THREE.Fog(scene.background, 4, 300);
 import spriteClouds from './spriteClouds';
 scene.add(spriteClouds);
 
-const envGenerator = new THREE.PMREMGenerator(renderer);
-envGenerator.compileCubemapShader();
-
-import envMapURL from './envmap.jpg';
-new THREE.TextureLoader().load(envMapURL, texture => {
-	const envMap = envGenerator.fromEquirectangular(texture);
-	scene.environment = envMap.texture;
-});
-
-
 /*const ground = new THREE.Mesh(
 	new THREE.PlaneBufferGeometry(1000, 1000, 1, 1),
 	new THREE.MeshStandardMaterial({
@@ -356,10 +352,9 @@ const lightTarget = new THREE.Object3D();
 lightTarget.position.set(0, 10, johnSoulsMesh.position.z);
 scene.add(lightTarget);
 
-//const johnLight = new THREE.PointLight(0xff2211, 0.5, 5);
-const johnLight = new THREE.SpotLight(0xFF4C00, 0.8, 10, Math.PI / 2);
-johnLight.lookAt(new THREE.Vector3(0, -1, 0));
+const johnLight = new THREE.SpotLight(0xFF8C66, 1, 20, Math.PI / 2);
 johnLight.position.set(0, 3, 0);
+johnLight.lookAt(new THREE.Vector3(0, -1, 0));
 scene.add(johnLight);
 
 const hatLight = new THREE.SpotLight(0xFF4C00, 1, 20, Math.PI / 6);
@@ -368,14 +363,20 @@ hatLight.target = lightTarget;
 scene.add(hatLight);
 initLightShadows(hatLight);
 
-const backLight1 = new THREE.SpotLight(0x00B8FF, 0.6, 20);
+const backLight1 = new THREE.SpotLight(0x00B8FF, 0.6, 20, Math.PI / 6);
 backLight1.position.set(3, 0, -3);
 backLight1.target = lightTarget;
 scene.add(backLight1);
 initLightShadows(backLight1);
 
-const backLight2 = new THREE.SpotLight(0x00B8FF, 0.6, 20);
+const backLight2 = new THREE.SpotLight(0x00B8FF, 0.6, 20, Math.PI / 6);
 backLight2.position.set(-3, 0, -3);
 backLight2.target = lightTarget;
 scene.add(backLight2);
 initLightShadows(backLight2);
+
+
+const bottomLight = new THREE.SpotLight(0xA3E6FF, 1, 7, Math.PI / 2);
+bottomLight.position.set(0, -5, 2);
+bottomLight.target = lightTarget;
+scene.add(bottomLight);
